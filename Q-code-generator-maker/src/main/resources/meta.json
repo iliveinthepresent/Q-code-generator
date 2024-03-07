@@ -6,7 +6,7 @@
   "author": "qiu",
   "createTime": "2023-11-22",
   "fileConfig": {
-    "inputRootPath": "/Users/qiu/Code/Q-code-generator/Q-code-generator-demo-projects/acm-template-pro",
+    "inputRootPath": "D:/code/Q-code-generator/Q-code-generator-demo-projects/acm-template-pro",
     "outputRootPath": "generated",
     "type": "dir",
     "files": [
