@@ -7,7 +7,7 @@
   "createTime": "2023-11-22",
   "fileConfig": {
     "inputRootPath": ".source/acm-template-pro",
-    "outputRootPath": "D:/abc",
+    "outputRootPath": "generated",
     "sourceRootPath": "D:/code/Q-code-generator/Q-code-generator-demo-projects/acm-template-pro",
     "type": "dir",
     "files": [
