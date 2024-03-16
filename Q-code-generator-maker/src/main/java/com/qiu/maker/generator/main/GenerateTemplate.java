@@ -3,6 +3,7 @@ package com.qiu.maker.generator.main;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.io.resource.ClassPathResource;
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.core.util.ZipUtil;
 import com.qiu.maker.generator.JarGenerator;
 import com.qiu.maker.generator.ScriptGenerator;
 import com.qiu.maker.generator.file.DynamicFileGenerator;
@@ -13,6 +14,10 @@ import freemarker.template.TemplateException;
 import java.io.File;
 import java.io.IOException;
 
+/**
+ * 生成代码生成器的模板
+ *
+ */
 public abstract class GenerateTemplate {
 
     public void doGenerate() throws TemplateException, IOException, InterruptedException {
@@ -39,6 +44,8 @@ public abstract class GenerateTemplate {
 
         // 5、生成精简版的程序（产物包）
         buildDist(outputPath, sourceCopyDestPath, jarPath, shellOutputFilePath);
+
+
     }
 
     /**
@@ -48,7 +55,7 @@ public abstract class GenerateTemplate {
      * @param jarPath
      * @param shellOutputFilePath
      */
-    protected void buildDist(String outputPath, String sourceCopyDestPath, String jarPath, String shellOutputFilePath) {
+    protected String buildDist(String outputPath, String sourceCopyDestPath, String jarPath, String shellOutputFilePath) {
         String distOutputPath = outputPath + "-dist";
         // 拷贝 jar 包
         String targetAbsolutePath = distOutputPath + File.separator + "target";
@@ -60,6 +67,7 @@ public abstract class GenerateTemplate {
         FileUtil.copy(shellOutputFilePath + ".bat", distOutputPath, true);
         // 拷贝源模板文件
         FileUtil.copy(sourceCopyDestPath, distOutputPath, true);
+        return distOutputPath;
     }
 
     /**
@@ -173,6 +181,17 @@ public abstract class GenerateTemplate {
         String sourceCopyDestPath = outputPath + File.separator + ".source";
         FileUtil.copy(sourceRootPath, sourceCopyDestPath, false);
         return sourceCopyDestPath;
+    }
+
+    /**
+     * 生成压缩包
+     * @param inputPath
+     * @return 压缩包的路径
+     */
+    protected String buildZip(String inputPath) {
+        String zipPath = inputPath + ".zip";
+        ZipUtil.zip(inputPath, zipPath);
+        return zipPath;
     }
 }
 

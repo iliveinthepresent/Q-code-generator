@@ -5,7 +5,7 @@ import freemarker.template.TemplateException;
 import java.io.IOException;
 
 /**
- * 生成数据模型
+ * 生成代码生成器
  */
 public class MainGenerator extends GenerateTemplate{
 }
