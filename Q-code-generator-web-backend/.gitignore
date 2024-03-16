@@ -1,6 +1,7 @@
 ### @author qiu ###
 
 HELP.md
+application-local.yml
 target/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
