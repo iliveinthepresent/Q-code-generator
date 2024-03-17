@@ -18,14 +18,17 @@ import com.qiu.web.model.dto.generator.GeneratorUpdateRequest;
 import com.qiu.web.model.entity.Generator;
 import com.qiu.web.model.entity.User;
 import com.qiu.web.model.vo.GeneratorVO;
+import com.qiu.web.service.FileService;
 import com.qiu.web.service.GeneratorService;
 import com.qiu.web.service.UserService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
 /**
@@ -43,6 +46,9 @@ public class GeneratorController {
 
     @Resource
     private UserService userService;
+
+    @Resource
+    private FileService fileService;
 
     // region 增删改查
 
@@ -248,6 +254,33 @@ public class GeneratorController {
         }
         boolean result = generatorService.updateById(generator);
         return ResultUtils.success(result);
+    }
+
+    /**
+     * 根据id下载代码生成器
+     * @param id
+     * @param httpServletRequest
+     * @param httpServletResponse
+     */
+    @GetMapping("/download")
+    @AuthCheck(mustRole = UserConstant.DEFAULT_ROLE)
+    public void download(Long id, HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) {
+        if (id <= 0) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        User loginUser = userService.getLoginUser(httpServletRequest);
+        Generator generator = generatorService.getById(id);
+        String distPath = generator.getDistPath();
+
+        if (StringUtils.isBlank(distPath)) {
+            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "产物包不存在");
+        }
+
+        log.info("用户 {} 下载了 {}", loginUser.getId(), distPath);
+
+        fileService.downloadFile(distPath, httpServletResponse);
+
+
     }
 
 }

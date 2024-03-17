@@ -1,20 +1,17 @@
 package com.qiu.web.controller;
 
 import cn.hutool.core.io.FileUtil;
-import com.qcloud.cos.model.COSObject;
-import com.qcloud.cos.model.COSObjectInputStream;
-import com.qcloud.cos.utils.IOUtils;
 import com.qiu.web.annotation.AuthCheck;
 import com.qiu.web.common.BaseResponse;
 import com.qiu.web.common.ErrorCode;
 import com.qiu.web.common.ResultUtils;
-import com.qiu.web.constant.FileConstant;
 import com.qiu.web.constant.UserConstant;
 import com.qiu.web.exception.BusinessException;
 import com.qiu.web.manager.CosManager;
 import com.qiu.web.model.dto.file.UploadFileRequest;
 import com.qiu.web.model.entity.User;
 import com.qiu.web.model.enums.FileUploadBizEnum;
+import com.qiu.web.service.FileService;
 import com.qiu.web.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -43,6 +40,9 @@ public class FileController {
 
     @Resource
     private CosManager cosManager;
+
+    @Resource
+    private FileService fileService;
 
 
     @PostMapping("/test/upload")
@@ -73,33 +73,17 @@ public class FileController {
 
     }
 
+    /**
+     * 管理员测试下载文件
+     *
+     * @param filepath 文件路径
+     * @param response 响应
+     * @throws IOException 异常
+     */
     @GetMapping("/test/download")
     @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
     public void testDownloadFile(String filepath, HttpServletResponse response) throws IOException {
-
-        COSObjectInputStream cosObjectInput = null;
-        try {
-            COSObject cosObject = cosManager.getObject(filepath);
-            cosObjectInput = cosObject.getObjectContent();
-            byte[] bytes = null;
-            bytes = IOUtils.toByteArray(cosObjectInput);
-
-            response.setContentType("application/octet-stream");
-            response.setHeader("Content-Disposition", "attachment;filename=" + filepath);
-            // 写入响应
-            response.getOutputStream().write(bytes);
-            response.flushBuffer();
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "下载失败");
-
-        } finally {
-            // 用完流之后一定要调用 close()
-            if (cosObjectInput != null) {
-                cosObjectInput.close();
-            }
-
-        }
+        fileService.downloadFile(filepath, response);
     }
 
 
@@ -132,7 +116,7 @@ public class FileController {
             multipartFile.transferTo(file);
             cosManager.putObject(filepath, file);
             // 返回可访问地址
-            return ResultUtils.success(FileConstant.COS_HOST + filepath);
+            return ResultUtils.success(filepath);
         } catch (Exception e) {
             log.error("file upload error, filepath = " + filepath, e);
             throw new BusinessException(ErrorCode.SYSTEM_ERROR, "上传失败");
