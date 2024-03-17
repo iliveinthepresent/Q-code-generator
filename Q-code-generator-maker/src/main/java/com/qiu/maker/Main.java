@@ -1,7 +1,6 @@
 package com.qiu.maker;
 
 import com.qiu.maker.generator.main.GenerateTemplate;
-import com.qiu.maker.generator.main.MainGenerator;
 import com.qiu.maker.generator.main.ZipGenerator;
 import freemarker.template.TemplateException;
 
