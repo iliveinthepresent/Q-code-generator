@@ -5,8 +5,6 @@ import cn.hutool.json.JSONUtil;
 import com.qiu.maker.template.model.TemplateMakerConfig;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
-
 public class TemplateMakerTest {
 
 

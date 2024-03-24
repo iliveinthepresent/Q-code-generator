@@ -1,6 +1,6 @@
 package com.qiu.web.model.dto.generator;
 
-import com.qiu.web.meta.Meta;
+import com.qiu.maker.meta.Meta;
 import lombok.Data;
 
 import java.io.Serializable;

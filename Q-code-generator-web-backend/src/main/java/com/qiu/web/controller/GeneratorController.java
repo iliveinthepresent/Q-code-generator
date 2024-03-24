@@ -1,10 +1,12 @@
 package com.qiu.web.controller;
 
 import cn.hutool.core.io.FileUtil;
-import cn.hutool.core.util.StrUtil;
-import cn.hutool.core.util.ZipUtil;
+import cn.hutool.core.util.*;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.qiu.maker.generator.main.ZipGenerator;
+import com.qiu.maker.meta.Meta;
+import com.qiu.maker.meta.MetaValidator;
 import com.qiu.web.annotation.AuthCheck;
 import com.qiu.web.common.BaseResponse;
 import com.qiu.web.common.DeleteRequest;
@@ -14,7 +16,6 @@ import com.qiu.web.constant.UserConstant;
 import com.qiu.web.exception.BusinessException;
 import com.qiu.web.exception.ThrowUtils;
 import com.qiu.web.manager.CosManager;
-import com.qiu.web.meta.Meta;
 import com.qiu.web.model.dto.generator.*;
 import com.qiu.web.model.entity.Generator;
 import com.qiu.web.model.entity.User;
@@ -22,6 +23,7 @@ import com.qiu.web.model.vo.GeneratorVO;
 import com.qiu.web.service.FileService;
 import com.qiu.web.service.GeneratorService;
 import com.qiu.web.service.UserService;
+import freemarker.template.TemplateException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -32,6 +34,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.util.List;
@@ -347,11 +350,19 @@ public class GeneratorController {
 
             // 执行脚本
             // 找到脚本文件所在路径
-            // 要注意，如果不是 windows 系统，找 generator 文件而不是 bat
+            // 要注意，如果不是 windows 系统，找 generator 文件而不是 generator.bat
+            String os = System.getProperty("os.name").toLowerCase();
+            String scriptName;
+            if (os.contains("windows")) {
+                scriptName = "generator.bat";
+            } else {
+                scriptName = "generator";
+            }
+
             File scriptFile = FileUtil.loopFiles(unzipDistDir, 2, null)
                     .stream()
                     .filter(file -> file.isFile()
-                            && "generator".equals(file.getName()))
+                            && scriptName.equals(file.getName()))
                     .findFirst()
                     .orElseThrow(RuntimeException::new);
 
@@ -408,7 +419,77 @@ public class GeneratorController {
                 FileUtil.del(tempDirPath);
             });
         }
+    }
 
+    /**
+     * 制作代码生成器
+     *
+     * @param request
+     * @param response
+     */
+    @PostMapping("/make")
+    @AuthCheck(mustRole = UserConstant.DEFAULT_ROLE)
+    public void makeGenerator(@RequestBody GeneratorMakeRequest generatorMakeRequest, HttpServletRequest request, HttpServletResponse response) throws IOException {
+        // 参数校验
+        Meta meta = generatorMakeRequest.getMeta();
+        String zipFilePath = generatorMakeRequest.getZipFilePath();
+        if (ObjectUtil.isEmpty(generatorMakeRequest)) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+
+        // 需要用户登录，并打日志
+        User loginUser = userService.getLoginUser(request);
+        log.info("userId = {} 在线制作生成器", loginUser.getId());
+
+        // 创建独立的工作空间
+        String projectPath = System.getProperty("user.dir");
+        String id = IdUtil.getSnowflakeNextId() + RandomUtil.randomString(6);
+        String tempDirPath = String.format("%s/.temp/make/%s", projectPath, id);
+        String localZipFilePath = tempDirPath + "/projectTemplate.zip";
+        if (!FileUtil.exist(localZipFilePath)) {
+            FileUtil.touch(localZipFilePath);
+        }
+
+        try {
+            // 下载压缩包到本地
+            try {
+                cosManager.download(zipFilePath, localZipFilePath);
+            } catch (Exception e) {
+                throw new BusinessException(ErrorCode.SYSTEM_ERROR, "项目模板压缩包下载失败");
+            }
+
+            // 解压压缩包，得到项目模板文件
+            File unzipDirPath = ZipUtil.unzip(localZipFilePath);
+
+            // 校验 meta 信息
+            MetaValidator.doValidAndFill(meta);
+            // 指定输出路径
+            String outputPath = tempDirPath + "/generated" + meta.getName();
+            // 调用 maker 项目的方法制作代码生成器
+            ZipGenerator zipGenerator = new ZipGenerator();
+            try {
+                zipGenerator.doGenerate(meta, outputPath);
+            } catch (Exception e) {
+                e.printStackTrace();
+                throw new BusinessException(ErrorCode.SYSTEM_ERROR, "代码生成器制作失败");
+            }
+
+            // 代码生成器压缩包的路径
+            String suffix = "-dist.zip";
+            String zipFileName = meta.getName() + suffix;
+            String distZipFilePath = tempDirPath + "/" + zipFileName;
+
+            // 发生压缩包给前端
+            // 设置响应头
+            response.setContentType("application/octet-stream;charset=UTF-8");
+            response.setHeader("Content-Disposition", "attachment; filename=" + zipFileName);
+            Files.copy(Paths.get(distZipFilePath), response.getOutputStream());
+        } finally {
+            // 清理文件
+            CompletableFuture.runAsync(() -> {
+                FileUtil.del(tempDirPath);
+            });
+        }
     }
 
 }

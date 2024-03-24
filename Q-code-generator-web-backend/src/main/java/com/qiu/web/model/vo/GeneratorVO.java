@@ -1,7 +1,7 @@
 package com.qiu.web.model.vo;
 
 import cn.hutool.json.JSONUtil;
-import com.qiu.web.meta.Meta;
+import com.qiu.maker.meta.Meta;
 import com.qiu.web.model.entity.Generator;
 import lombok.Data;
 import org.springframework.beans.BeanUtils;
