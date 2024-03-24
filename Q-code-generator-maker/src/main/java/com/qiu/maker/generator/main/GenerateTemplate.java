@@ -1,7 +1,6 @@
 package com.qiu.maker.generator.main;
 
 import cn.hutool.core.io.FileUtil;
-import cn.hutool.core.io.resource.ClassPathResource;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.core.util.ZipUtil;
 import com.qiu.maker.generator.JarGenerator;
@@ -22,10 +21,12 @@ public abstract class GenerateTemplate {
 
     public void doGenerate() throws TemplateException, IOException, InterruptedException {
         Meta meta = MetaManager.getMetaObject();
-
-        // 0、输出根路径
         String projectPath = System.getProperty("user.dir");
         String outputPath = projectPath + File.separator + "generated" + File.separator + meta.getName();
+        doGenerate(meta,outputPath);
+    }
+
+    public void doGenerate(Meta meta, String outputPath) throws TemplateException, IOException, InterruptedException {
         if (!FileUtil.exist(outputPath)) {
             FileUtil.mkdir(outputPath);
         }
@@ -44,8 +45,6 @@ public abstract class GenerateTemplate {
 
         // 5、生成精简版的程序（产物包）
         buildDist(outputPath, sourceCopyDestPath, jarPath, shellOutputFilePath);
-
-
     }
 
     /**
@@ -107,8 +106,8 @@ public abstract class GenerateTemplate {
      */
     protected void generateCode(Meta meta, String outputPath) throws IOException, TemplateException {
         // 读取 resources 目录
-        ClassPathResource classPathResource = new ClassPathResource("");
-        String inputResourcePath = classPathResource.getAbsolutePath();
+//        ClassPathResource classPathResource = new ClassPathResource("");
+        String inputResourcePath = "";
 
         // Java 包基础路径
         String outputBasePackage = meta.getBasePackage();
