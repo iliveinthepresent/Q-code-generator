@@ -459,12 +459,14 @@ public class GeneratorController {
             }
 
             // 解压压缩包，得到项目模板文件
-            File unzipDirPath = ZipUtil.unzip(localZipFilePath);
+            File unzipDir = ZipUtil.unzip(localZipFilePath);
 
             // 校验 meta 信息
+            String sourceRootPath = unzipDir.getAbsolutePath();
+            meta.getFileConfig().setSourceRootPath(sourceRootPath);
             MetaValidator.doValidAndFill(meta);
             // 指定输出路径
-            String outputPath = tempDirPath + "/generated" + meta.getName();
+            String outputPath = tempDirPath + "/generated/" + meta.getName();
             // 调用 maker 项目的方法制作代码生成器
             ZipGenerator zipGenerator = new ZipGenerator();
             try {
@@ -477,7 +479,7 @@ public class GeneratorController {
             // 代码生成器压缩包的路径
             String suffix = "-dist.zip";
             String zipFileName = meta.getName() + suffix;
-            String distZipFilePath = tempDirPath + "/" + zipFileName;
+            String distZipFilePath = outputPath + suffix;
 
             // 发生压缩包给前端
             // 设置响应头
