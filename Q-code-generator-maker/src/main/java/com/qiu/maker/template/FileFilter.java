@@ -34,7 +34,7 @@ public class FileFilter {
      * 单个文件过滤
      *
      * @param fileFilterConfigList 过滤规则
-     * @param file 单个文件
+     * @param file                 单个文件
      * @return 是否保留
      */
     public static boolean doSingleFileFilter(List<FileFilterConfig> fileFilterConfigList, File file) {

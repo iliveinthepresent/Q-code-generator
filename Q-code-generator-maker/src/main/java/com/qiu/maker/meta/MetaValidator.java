@@ -99,7 +99,7 @@ public class MetaValidator {
             if (FileTypeEnum.GROUP.getValue().equals(type)) {
                 // todo 补充校验
                 continue;
-             }
+            }
             // inputPath: 必填
             String inputPath = fileInfo.getInputPath();
             if (StrUtil.isBlank(inputPath)) {

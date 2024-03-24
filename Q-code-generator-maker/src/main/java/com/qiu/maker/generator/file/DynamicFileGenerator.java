@@ -20,9 +20,9 @@ public class DynamicFileGenerator {
     /**
      * 根据绝对路径生成文件
      *
-     * @param inputPath 模板文件输入路径
+     * @param inputPath  模板文件输入路径
      * @param outputPath 输出路径
-     * @param model 数据模型
+     * @param model      数据模型
      * @throws IOException
      * @throws TemplateException
      */
@@ -48,7 +48,7 @@ public class DynamicFileGenerator {
         }
 
         // 生成
-        try(Writer out = new FileWriter(outputPath);) {
+        try (Writer out = new FileWriter(outputPath);) {
             template.process(model, out);
         }
     }
@@ -58,8 +58,8 @@ public class DynamicFileGenerator {
      * 根据相对路径生成文件
      *
      * @param relativePath 模板文件输入路径
-     * @param outputPath 输出路径
-     * @param model 数据模型
+     * @param outputPath   输出路径
+     * @param model        数据模型
      * @throws IOException
      * @throws TemplateException
      */
@@ -69,7 +69,7 @@ public class DynamicFileGenerator {
 
         // 使用类加载器，通过相对路径定位模板文件基础包路径
         int index = relativePath.lastIndexOf("/");
-        String basePackagePath =  relativePath.substring(0, index);
+        String basePackagePath = relativePath.substring(0, index);
         ClassTemplateLoader classTemplateLoader = new ClassTemplateLoader(DynamicFileGenerator.class, basePackagePath);
         configuration.setTemplateLoader(classTemplateLoader);
 
@@ -79,7 +79,7 @@ public class DynamicFileGenerator {
         // 创建模板对象，加载指定模板
         String templateName = relativePath.substring(index + 1);
         // 解决中文乱码问题
-        Template template = configuration.getTemplate(templateName,"utf-8");
+        Template template = configuration.getTemplate(templateName, "utf-8");
 
         // 文件不存在则创建文件和父目录
         if (!FileUtil.exist(outputPath)) {
@@ -87,7 +87,7 @@ public class DynamicFileGenerator {
         }
 
         // 生成
-        try(BufferedWriter out = new BufferedWriter(new OutputStreamWriter(Files.newOutputStream(Paths.get(outputPath)), StandardCharsets.UTF_8));) {
+        try (BufferedWriter out = new BufferedWriter(new OutputStreamWriter(Files.newOutputStream(Paths.get(outputPath)), StandardCharsets.UTF_8));) {
             template.process(model, out);
         }
     }

@@ -18,7 +18,7 @@ public class FileFilterConfig {
     /**
      * 过滤规则
      */
-    private String rule;  
+    private String rule;
 
     /**
      * 过滤值

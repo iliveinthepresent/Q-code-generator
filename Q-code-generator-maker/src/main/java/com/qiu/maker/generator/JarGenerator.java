@@ -20,7 +20,7 @@ public class JarGenerator {
         InputStream inputStream = process.getInputStream();
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
         String line;
-        while((line = bufferedReader.readLine()) != null) {
+        while ((line = bufferedReader.readLine()) != null) {
             System.out.println(line);
         }
         int exitCode = process.waitFor();

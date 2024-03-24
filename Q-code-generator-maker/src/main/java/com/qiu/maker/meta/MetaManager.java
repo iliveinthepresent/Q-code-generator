@@ -4,10 +4,11 @@ import cn.hutool.core.io.resource.ResourceUtil;
 import cn.hutool.json.JSONUtil;
 
 /**
- *  双检锁单例模式
+ * 双检锁单例模式
  */
 public class MetaManager {
     private static volatile Meta meta;
+
     private MetaManager() {
         // 私有构造函数，防止外部实例化
     }
