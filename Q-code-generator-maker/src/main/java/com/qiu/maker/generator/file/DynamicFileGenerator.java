@@ -7,10 +7,10 @@ import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.Writer;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 /**
  * 动态文件生成
@@ -78,7 +78,8 @@ public class DynamicFileGenerator {
 
         // 创建模板对象，加载指定模板
         String templateName = relativePath.substring(index + 1);
-        Template template = configuration.getTemplate(templateName);
+        // 解决中文乱码问题
+        Template template = configuration.getTemplate(templateName,"utf-8");
 
         // 文件不存在则创建文件和父目录
         if (!FileUtil.exist(outputPath)) {
@@ -86,7 +87,7 @@ public class DynamicFileGenerator {
         }
 
         // 生成
-        try(Writer out = new FileWriter(outputPath);) {
+        try(BufferedWriter out = new BufferedWriter(new OutputStreamWriter(Files.newOutputStream(Paths.get(outputPath)), StandardCharsets.UTF_8));) {
             template.process(model, out);
         }
     }
